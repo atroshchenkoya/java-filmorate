@@ -33,14 +33,12 @@ class UserControllerTest {
 
     @Test
     void shouldNotCreateUserWithInvalidEmail() throws Exception {
-        String userJson = """
-                {
-                    "email": "invalid-email",
-                    "login": "test_user",
-                    "name": "Alexey Popov",
-                    "birthday": "2000-01-01"
-                }
-                """;
+        String userJson = "{"
+                + "\"email\": \"invalid-email\","
+                + "\"login\": \"test_user\","
+                + "\"name\": \"Alexey Popov\","
+                + "\"birthday\": \"2000-01-01\""
+                + "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -83,14 +81,12 @@ class UserControllerTest {
 
     @Test
     void shouldUseLoginAsNameIfNameIsEmpty() throws Exception {
-        String userJson = """
-                {
-                    "email": "alex@gmail.com",
-                    "login": "test_user",
-                    "name": "",
-                    "birthday": "2000-01-01"
-                }
-                """;
+        String userJson = "{"
+                + "\"email\": \"alex@gmail.com\","
+                + "\"login\": \"test_user\","
+                + "\"name\": \"\","
+                + "\"birthday\": \"2000-01-01\""
+                + "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
