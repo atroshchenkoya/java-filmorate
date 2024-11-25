@@ -18,13 +18,11 @@ class UserControllerTest {
 
     @Test
     void shouldNotCreateUserWithoutEmail() throws Exception {
-        String userJson = """
-                {
-                    "login": "test_user",
-                    "name": "Alexey Popov",
-                    "birthday": "2000-01-01"
-                }
-                """;
+        String userJson = "{"
+                + "\"login\": \"test_user\","
+                + "\"name\": \"Alexey Popov\","
+                + "\"birthday\": \"2000-01-01\""
+                + "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -53,14 +51,12 @@ class UserControllerTest {
 
     @Test
     void shouldNotCreateUserWithEmptyLogin() throws Exception {
-        String userJson = """
-                {
-                    "email": "alex@gmail.com",
-                    "login": " ",
-                    "name": "Alexey Popov",
-                    "birthday": "2000-01-01"
-                }
-                """;
+        String userJson = "{"
+                + "\"email\": \"alex@gmail.com\","
+                + "\"login\": \" \","
+                + "\"name\": \"Alexey Popov\","
+                + "\"birthday\": \"2000-01-01\""
+                + "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,14 +67,12 @@ class UserControllerTest {
 
     @Test
     void shouldNotCreateUserWithFutureBirthday() throws Exception {
-        String userJson = """
-                {
-                    "email": "alex@gmail.com",
-                    "login": "test_user",
-                    "name": "Alexey Popov",
-                    "birthday": "2050-01-01"
-                }
-                """;
+        String userJson = "{"
+                + "\"email\": \"alex@gmail.com\","
+                + "\"login\": \"test_user\","
+                + "\"name\": \"Alexey Popov\","
+                + "\"birthday\": \"2050-01-01\""
+                + "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
