@@ -18,13 +18,11 @@ class FilmControllerTest {
 
     @Test
     void shouldNotCreateFilmWithoutName() throws Exception {
-        String filmJson = """
-                {
-                    "description": "Funny movie",
-                    "releaseDate": "2000-01-01",
-                    "duration": 120
-                }
-                """;
+        String filmJson = "{"
+                + "\"description\": \"Funny movie\","
+                + "\"releaseDate\": \"2000-01-01\","
+                + "\"duration\": 120"
+                + "}";
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -52,14 +50,12 @@ class FilmControllerTest {
 
     @Test
     void shouldNotCreateFilmWithReleaseDateBefore1895() throws Exception {
-        String filmJson = """
-                    {
-                        "name": "Movie",
-                        "description": "Funny movie",
-                        "releaseDate": "1895-12-27",
-                        "duration": 120
-                    }
-                    """;
+        String filmJson = "{"
+                + "\"name\": \"Movie\","
+                + "\"description\": \"Funny movie\","
+                + "\"releaseDate\": \"1895-12-27\","
+                + "\"duration\": 120"
+                + "}";
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -70,14 +66,12 @@ class FilmControllerTest {
 
     @Test
     void shouldNotCreateFilmWithNegativeDuration() throws Exception {
-        String filmJson = """
-                        {
-                            "name": "Movie",
-                            "description": "Funny movie",
-                            "releaseDate": "2000-01-01",
-                            "duration": -1
-                        }
-                        """;
+        String filmJson = "{"
+                + "\"name\": \"Movie\","
+                + "\"description\": \"Funny movie\","
+                + "\"releaseDate\": \"2000-01-01\","
+                + "\"duration\": -1"
+                + "}";
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
