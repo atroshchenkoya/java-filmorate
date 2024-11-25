@@ -19,12 +19,12 @@ class FilmControllerTest {
     @Test
     void shouldNotCreateFilmWithoutName() throws Exception {
         String filmJson = """
-                    {
-                        "description": "Funny movie",
-                        "releaseDate": "2000-01-01",
-                        "duration": 120
-                    }
-                    """;
+                {
+                    "description": "Funny movie",
+                    "releaseDate": "2000-01-01",
+                    "duration": 120
+                }
+                """;
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
