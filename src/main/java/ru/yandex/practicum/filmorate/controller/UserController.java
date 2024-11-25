@@ -1,17 +1,17 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +19,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@Validated
 public class UserController {
 
     private final Map<Long, User> users = new HashMap<>();
@@ -30,9 +31,8 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         log.info("Попытка создать пользователя: {}", user);
-        validateUser(user);
         setNameByLoginIfNameIsNull(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
@@ -41,14 +41,13 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
+    public User update(@Valid @RequestBody User user) {
         log.info("Попытка обновить пользователя: {}", user);
-        if (user.getId() == 0 || !users.containsKey(user.getId())) {
+        if (!users.containsKey(user.getId())) {
             String errorMessage = "Пользователь с id = " + user.getId() + " не найден.";
             log.error(errorMessage);
             throw new NotFoundException(errorMessage);
         }
-        validateUser(user);
         setNameByLoginIfNameIsNull(user);
         users.put(user.getId(), user);
         log.info("Пользователь успешно обновлён: {}", user);
@@ -69,23 +68,5 @@ public class UserController {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
-    }
-
-    private void validateUser(User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            String errorMessage = "Некорректная электронная почта.";
-            log.error(errorMessage);
-            throw new ConditionsNotMetException(errorMessage);
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            String errorMessage = "Логин не может быть пустым или содержать пробелы.";
-            log.error(errorMessage);
-            throw new ConditionsNotMetException(errorMessage);
-        }
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
-            String errorMessage = "Дата рождения не может быть в будущем.";
-            log.error(errorMessage);
-            throw new ConditionsNotMetException(errorMessage);
-        }
     }
 }

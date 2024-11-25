@@ -1,82 +1,107 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.model.Film;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
+@WebMvcTest(FilmController.class)
 class FilmControllerTest {
 
-    private final FilmController filmController = new FilmController();
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
-    void shouldNotCreateFilmWithoutName() {
-        Film film = new Film();
-        film.setDescription("Funny movie");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
+    void shouldNotCreateFilmWithoutName() throws Exception {
+        String filmJson = """
+                {
+                    "description": "Funny movie",
+                    "releaseDate": "2000-01-01",
+                    "duration": 120
+                }
+                """;
 
-        Exception exception = assertThrows(ConditionsNotMetException.class, () -> filmController.create(film));
-
-        assertEquals("Название фильма не может быть пустым.", exception.getMessage());
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filmJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.name").value("Название фильма не может быть пустым."));
     }
 
     @Test
-    void shouldNotCreateFilmWithLongDescription() {
-        Film film = new Film();
-        film.setName("Movie");
-        film.setDescription("A".repeat(201));
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
+    void shouldNotCreateFilmWithMoreThen200SymbolsDescription() throws Exception {
+        String filmJson = "{\n" +
+                "  \"name\": \"Movie\",\n" +
+                "  \"description\": \"" + "A".repeat(201) + "\",\n" +
+                "  \"releaseDate\": \"2000-01-01\",\n" +
+                "  \"duration\": 120\n" +
+                "}";
 
-        Exception exception = assertThrows(ConditionsNotMetException.class, () -> filmController.create(film));
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filmJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.description").value("Описание фильма не может превышать 200 символов."));
+    }
 
-        assertEquals("Описание фильма не может превышать 200 символов.", exception.getMessage());
+
+    @Test
+    void shouldNotCreateFilmWithReleaseDateBefore1895() throws Exception {
+        String filmJson = """
+                {
+                    "name": "Movie",
+                    "description": "Funny movie",
+                    "releaseDate": "1895-12-27",
+                    "duration": 120
+                }
+                """;
+
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filmJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.releaseDate").value("Дата релиза фильма не может быть раньше 28 декабря 1895 года."));
     }
 
     @Test
-    void shouldNotCreateFilmWithReleaseDateBefore1895() {
-        Film film = new Film();
-        film.setName("Movie");
-        film.setDescription("Funny movie");
-        film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        film.setDuration(120);
+    void shouldNotCreateFilmWithNegativeDuration() throws Exception {
+        String filmJson = """
+                {
+                    "name": "Movie",
+                    "description": "Funny movie",
+                    "releaseDate": "2000-01-01",
+                    "duration": -1
+                }
+                """;
 
-        Exception exception = assertThrows(ConditionsNotMetException.class, () -> filmController.create(film));
-
-        assertEquals("Дата релиза фильма не может быть раньше 28 декабря 1895 года.", exception.getMessage());
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filmJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.duration").value("Продолжительность фильма должна быть положительным числом."));
     }
 
     @Test
-    void shouldNotCreateFilmWithNegativeDuration() {
-        Film film = new Film();
-        film.setName("Movie");
-        film.setDescription("Funny movie");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(-1);
+    void shouldCreateFilmSuccessfully() throws Exception {
+        String filmJson = "{\n" +
+                "  \"name\": \"Movie\",\n" +
+                "  \"description\": \"" + "A".repeat(200) + "\",\n" +
+                "  \"releaseDate\": \"2000-01-01\",\n" +
+                "  \"duration\": 120\n" +
+                "}";
 
-        Exception exception = assertThrows(ConditionsNotMetException.class, () -> filmController.create(film));
-
-        assertEquals("Продолжительность фильма должна быть положительным числом.", exception.getMessage());
-    }
-
-    @Test
-    void shouldCreateFilmSuccessfully() {
-        Film film = new Film();
-        film.setName("Movie");
-        film.setDescription("A".repeat(200));
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
-
-        Film createdFilm = filmController.create(film);
-
-        assertEquals("Movie", createdFilm.getName());
-        assertEquals("A".repeat(200), createdFilm.getDescription());
-        assertEquals(LocalDate.of(2000, 1, 1), createdFilm.getReleaseDate());
-        assertEquals(120, createdFilm.getDuration());
+        mockMvc.perform(post("/films")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filmJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Movie"))
+                .andExpect(jsonPath("$.description").value("A".repeat(200)))
+                .andExpect(jsonPath("$.releaseDate").value("2000-01-01"))
+                .andExpect(jsonPath("$.duration").value(120));
     }
 }
