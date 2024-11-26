@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +31,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@Validated @RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         log.info("Попытка создать фильм: {}", film);
         film.setId(getNextId());
         films.put(film.getId(), film);
@@ -39,7 +40,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Validated @RequestBody Film film) {
+    public Film update(@Valid @RequestBody Film film) {
         log.info("Попытка обновить фильм: {}", film);
         if (!films.containsKey(film.getId())) {
             String errorMessage = "Фильм с id = " + film.getId() + " не найден.";
