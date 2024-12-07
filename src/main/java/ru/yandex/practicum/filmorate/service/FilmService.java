@@ -33,14 +33,14 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long userId) {
-        Film film = getFilmOrThrow(filmId);  // Получаем фильм или выбрасываем исключение
-        userService.findById(userId);  // Проверяем существование пользователя
+        Film film = getFilmOrThrow(filmId);
+        userService.findById(userId);
         filmStorage.addLike(film, userId);
     }
 
     public void removeLike(Long filmId, Long userId) {
-        Film film = getFilmOrThrow(filmId);  // Получаем фильм или выбрасываем исключение
-        userService.findById(userId);  // Проверяем существование пользователя
+        Film film = getFilmOrThrow(filmId);
+        userService.findById(userId);
         filmStorage.removeLike(film, userId);
     }
 
