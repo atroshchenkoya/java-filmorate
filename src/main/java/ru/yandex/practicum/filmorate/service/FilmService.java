@@ -11,11 +11,12 @@ import java.util.Collection;
 @Service
 @RequiredArgsConstructor
 public class FilmService {
+
     private final FilmStorage filmStorage;
+    private final UserService userService;
 
     public Film findById(Long id) {
-        return filmStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден."));
+        return getFilmOrThrow(id);
     }
 
     public Collection<Film> findAll() {
@@ -27,10 +28,29 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        if (filmStorage.findById(film.getId()).isEmpty()) {
-            throw new NotFoundException("Фильм с id = " + film.getId() + " не найден.");
-        }
+        getFilmOrThrow(film.getId());
         return filmStorage.update(film);
+    }
+
+    public void addLike(Long filmId, Long userId) {
+        Film film = getFilmOrThrow(filmId);  // Получаем фильм или выбрасываем исключение
+        userService.findById(userId);  // Проверяем существование пользователя
+        filmStorage.addLike(film, userId);
+    }
+
+    public void removeLike(Long filmId, Long userId) {
+        Film film = getFilmOrThrow(filmId);  // Получаем фильм или выбрасываем исключение
+        userService.findById(userId);  // Проверяем существование пользователя
+        filmStorage.removeLike(film, userId);
+    }
+
+    public Collection<Film> getPopularFilms(int count) {
+        return filmStorage.getPopularFilms(count);
+    }
+
+    private Film getFilmOrThrow(Long filmId) {
+        return filmStorage.findById(filmId)
+                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден."));
     }
 
 }
