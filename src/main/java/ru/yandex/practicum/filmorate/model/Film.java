@@ -8,11 +8,15 @@ import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.validation.DateValidIfNotBeforeCustomDate;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(of = "id")
 public class Film {
     private long id;
+
+    private Set<Long> whoLikes = new HashSet<>();
 
     @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
