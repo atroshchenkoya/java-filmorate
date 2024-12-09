@@ -14,13 +14,4 @@ public interface UserStorage {
     User create(User user);
 
     User update(User user);
-
-    void addFriend(User user, User friend);
-
-    void removeFriend(User user, User friend);
-
-    Collection<User> getFriends(User user);
-
-    Collection<User> getCommonFriends(User user, User other);
-
 }

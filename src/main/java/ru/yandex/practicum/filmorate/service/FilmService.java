@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +17,8 @@ public class FilmService {
     private final UserService userService;
 
     public Film findById(Long id) {
-        return getFilmOrThrow(id);
+        return filmStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден."));
     }
 
     public Collection<Film> findAll() {
@@ -28,29 +30,34 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        getFilmOrThrow(film.getId());
+        checkFilm(film.getId());
         return filmStorage.update(film);
     }
 
     public void addLike(Long filmId, Long userId) {
-        Film film = getFilmOrThrow(filmId);
-        userService.findById(userId);
-        filmStorage.addLike(film, userId);
+        userService.checkUser(userId);
+        Film film = findById(filmId);
+        film.getWhoLikes().add(userId);
+        filmStorage.update(film);
     }
 
     public void removeLike(Long filmId, Long userId) {
-        Film film = getFilmOrThrow(filmId);
-        userService.findById(userId);
-        filmStorage.removeLike(film, userId);
+        userService.checkUser(userId);
+        Film film = findById(filmId);
+        film.getWhoLikes().remove(userId);
+        filmStorage.update(film);
     }
 
     public Collection<Film> getPopularFilms(int count) {
-        return filmStorage.getPopularFilms(count);
+        return findAll().stream()
+                .sorted((f1, f2) -> Integer.compare(f2.getWhoLikes().size(), f1.getWhoLikes().size()))
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
-    private Film getFilmOrThrow(Long filmId) {
-        return filmStorage.findById(filmId)
-                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден."));
+    private void checkFilm(Long filmId) {
+        if (filmStorage.findById(filmId).isEmpty()) {
+            throw new NotFoundException("Фильм с id = " + filmId + " не найден.");
+        }
     }
-
 }

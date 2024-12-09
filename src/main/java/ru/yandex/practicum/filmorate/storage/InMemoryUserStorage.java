@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -39,38 +37,7 @@ public class InMemoryUserStorage implements UserStorage {
         return user;
     }
 
-    @Override
-    public void addFriend(User user, User friend) {
-        user.getFriends().add(friend.getId());
-        friend.getFriends().add(user.getId());
-    }
-
-    @Override
-    public void removeFriend(User user, User friend) {
-        user.getFriends().remove(friend.getId());
-        friend.getFriends().remove(user.getId());
-    }
-
-    @Override
-    public Collection<User> getFriends(User user) {
-        return user.getFriends()
-                .stream()
-                .map(users::get)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<User> getCommonFriends(User user, User other) {
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> otherFriends = other.getFriends();
-        return userFriends.stream()
-                .filter(otherFriends::contains)
-                .map(users::get)
-                .collect(Collectors.toList());
-    }
-
     private long getNextId() {
         return ++currentMaxId;
     }
-
 }
