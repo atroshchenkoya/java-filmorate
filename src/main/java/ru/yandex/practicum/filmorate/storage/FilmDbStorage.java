@@ -97,7 +97,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film create(Film film) {
 
-        CheckCorrectMpaAndGenres(film);
+        checkCorrectMpaAndGenres(film);
 
         String sql = "INSERT INTO films (name, description, release_date, duration, MPA_RATING_ID) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -136,7 +136,7 @@ public class FilmDbStorage implements FilmStorage {
             throw new ConditionsNotMetException("Фильм с id = " + film.getId() + " не найден.");
         }
 
-        CheckCorrectMpaAndGenres(film);
+        checkCorrectMpaAndGenres(film);
 
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, MPA_RATING_ID = ? WHERE id = ?";
         jdbcTemplate.update(sql, film.getName(), film.getDescription(), Date.valueOf(film.getReleaseDate()),
@@ -147,7 +147,7 @@ public class FilmDbStorage implements FilmStorage {
         return findById(film.getId()).orElse(null);
     }
 
-    private void CheckCorrectMpaAndGenres(Film film) {
+    private void checkCorrectMpaAndGenres(Film film) {
         if (film.getMpa() == null || mpaExists(film.getMpa().getId())) {
             assert film.getMpa() != null;
             throw new ConditionsNotMetException("Рейтинг MPA с id = " + film.getMpa().getId() + " не найден.");
