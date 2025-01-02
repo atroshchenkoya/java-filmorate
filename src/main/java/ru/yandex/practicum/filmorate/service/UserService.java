@@ -8,8 +8,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -42,43 +42,31 @@ public class UserService {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-
-        userStorage.update(user);
-        userStorage.update(friend);
+        userStorage.addFriend(user, friend);
     }
 
     public void removeFriend(Long userId, Long friendId) {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-
-        userStorage.update(user);
-        userStorage.update(friend);
+        userStorage.removeFriend(user, friend);
     }
 
     public Collection<User> getFriends(Long userId) {
         User user = findById(userId);
-        return user.getFriends().stream()
-                .map(this::findById)
-                .collect(Collectors.toList());
+        return userStorage.getFriends(user);
     }
 
     public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
-        User user = findById(userId);
-        User otherUser = findById(otherUserId);
+        Collection<User> userFriends = getFriends(userId);
+        Collection<User> otherUserFriends = getFriends(otherUserId);
 
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> otherFriends = otherUser.getFriends();
+        Set<User> commonFriends = new HashSet<>(userFriends);
+        commonFriends.retainAll(otherUserFriends);
 
-        return userFriends.stream()
-                .filter(otherFriends::contains)
-                .map(this::findById)
-                .collect(Collectors.toList());
+        return commonFriends;
     }
+
 
     private void setNameByLoginIfNameIsNull(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
