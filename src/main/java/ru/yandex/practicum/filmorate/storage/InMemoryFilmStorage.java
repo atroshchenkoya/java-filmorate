@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,6 +36,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film update(Film film) {
         films.put(film.getId(), film);
         return film;
+    }
+
+    @Override
+    public Collection<Film> getPopularFilms(int count) {
+        return List.of();
     }
 
     private long getNextId() {

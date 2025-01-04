@@ -4,16 +4,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmLikeStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmStorage;
+    private final FilmLikeStorage filmLikeStorage; // Добавляем FilmLikeStorage
     private final UserService userService;
 
     public Film findById(Long id) {
@@ -35,24 +37,23 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long userId) {
-        userService.checkUser(userId);
+        User user = userService.findById(userId);
         Film film = findById(filmId);
-        film.getWhoLikes().add(userId);
-        filmStorage.update(film);
+        if (!filmLikeStorage.likeExists(film, user)) {
+            filmLikeStorage.addLike(film, user);
+        }
     }
 
     public void removeLike(Long filmId, Long userId) {
-        userService.checkUser(userId);
+        User user = userService.findById(userId);
         Film film = findById(filmId);
-        film.getWhoLikes().remove(userId);
-        filmStorage.update(film);
+        if (filmLikeStorage.likeExists(film, user)) {
+            filmLikeStorage.removeLike(film, user);
+        }
     }
 
     public Collection<Film> getPopularFilms(int count) {
-        return findAll().stream()
-                .sorted((f1, f2) -> Integer.compare(f2.getWhoLikes().size(), f1.getWhoLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getPopularFilms(count);
     }
 
     private void checkFilm(Long filmId) {

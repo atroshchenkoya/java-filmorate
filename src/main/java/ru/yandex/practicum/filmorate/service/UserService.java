@@ -5,11 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserFriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final UserFriendStorage userFriendStorage; // Внедряем UserFriendStorage
 
     public User findById(Long id) {
         return userStorage.findById(id)
@@ -42,42 +44,29 @@ public class UserService {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-
-        userStorage.update(user);
-        userStorage.update(friend);
+        userFriendStorage.addFriend(user, friend); // Используем UserFriendStorage
     }
 
     public void removeFriend(Long userId, Long friendId) {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-
-        userStorage.update(user);
-        userStorage.update(friend);
+        userFriendStorage.removeFriend(user, friend); // Используем UserFriendStorage
     }
 
     public Collection<User> getFriends(Long userId) {
         User user = findById(userId);
-        return user.getFriends().stream()
-                .map(this::findById)
-                .collect(Collectors.toList());
+        return userFriendStorage.getFriends(user); // Используем UserFriendStorage
     }
 
     public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
-        User user = findById(userId);
-        User otherUser = findById(otherUserId);
+        Collection<User> userFriends = getFriends(userId);
+        Collection<User> otherUserFriends = getFriends(otherUserId);
 
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> otherFriends = otherUser.getFriends();
+        Set<User> commonFriends = new HashSet<>(userFriends);
+        commonFriends.retainAll(otherUserFriends);
 
-        return userFriends.stream()
-                .filter(otherFriends::contains)
-                .map(this::findById)
-                .collect(Collectors.toList());
+        return commonFriends;
     }
 
     private void setNameByLoginIfNameIsNull(User user) {
