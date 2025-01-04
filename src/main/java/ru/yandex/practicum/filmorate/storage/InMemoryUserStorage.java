@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -36,21 +35,6 @@ public class InMemoryUserStorage implements UserStorage {
     public User update(User user) {
         users.put(user.getId(), user);
         return user;
-    }
-
-    @Override
-    public void addFriend(User user, User friend) {
-
-    }
-
-    @Override
-    public void removeFriend(User user, User friend) {
-
-    }
-
-    @Override
-    public Collection<User> getFriends(User user) {
-        return List.of();
     }
 
     private long getNextId() {

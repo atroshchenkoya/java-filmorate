@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserFriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
@@ -17,6 +18,7 @@ import java.util.Set;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final UserFriendStorage userFriendStorage; // Внедряем UserFriendStorage
 
     public User findById(Long id) {
         return userStorage.findById(id)
@@ -42,19 +44,19 @@ public class UserService {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        userStorage.addFriend(user, friend);
+        userFriendStorage.addFriend(user, friend); // Используем UserFriendStorage
     }
 
     public void removeFriend(Long userId, Long friendId) {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        userStorage.removeFriend(user, friend);
+        userFriendStorage.removeFriend(user, friend); // Используем UserFriendStorage
     }
 
     public Collection<User> getFriends(Long userId) {
         User user = findById(userId);
-        return userStorage.getFriends(user);
+        return userFriendStorage.getFriends(user); // Используем UserFriendStorage
     }
 
     public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
@@ -66,7 +68,6 @@ public class UserService {
 
         return commonFriends;
     }
-
 
     private void setNameByLoginIfNameIsNull(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
