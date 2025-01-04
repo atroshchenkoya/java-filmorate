@@ -12,6 +12,8 @@ import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.mapper.GenreMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.MpaMapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -37,6 +39,8 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final GenreMapper genreMapper;
+    private final MpaMapper mpaMapper;
 
     @Override
     public Optional<Film> findById(Long id) {
@@ -72,10 +76,7 @@ public class FilmDbStorage implements FilmStorage {
 
         Map<Long, Set<Genre>> filmGenres = getGenresForFilms(genreSql, filmIds);
 
-        films.forEach(film -> {
-            assert filmGenres != null;
-            film.setGenres(filmGenres.getOrDefault(film.getId(), new HashSet<>()));
-        });
+        films.forEach(film -> film.setGenres(filmGenres.getOrDefault(film.getId(), new HashSet<>())));
 
         Map<Long, Mpa> filmMpa = getMpaForFilms(films);
 
@@ -91,7 +92,7 @@ public class FilmDbStorage implements FilmStorage {
                     Map<Long, Set<Genre>> genresMap = new HashMap<>();
                     while (rs.next()) {
                         long filmId = rs.getLong("film_id");
-                        Genre genre = mapRowToGenre(rs, rs.getRow());
+                        Genre genre = genreMapper.mapRow(rs, rs.getRow());
                         genresMap.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
                     }
                     return genresMap;
@@ -120,7 +121,7 @@ public class FilmDbStorage implements FilmStorage {
             Map<Long, Mpa> mpaMap = new HashMap<>();
             while (rs.next()) {
                 long filmId = rs.getLong("film_id");
-                Mpa mpa = mapRowToMpa(rs, rs.getRow());
+                Mpa mpa = mpaMapper.mapRow(rs, rs.getRow());
                 mpaMap.put(filmId, mpa);
             }
             return mpaMap;
@@ -240,12 +241,12 @@ public class FilmDbStorage implements FilmStorage {
 
     private Set<Genre> getGenresByFilmId(Long filmId) {
         String sql = "SELECT g.id, g.name FROM genres g JOIN film_genres fg ON g.id = fg.genre_id WHERE fg.film_id = ?";
-        return new HashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, filmId));
+        return new HashSet<>(jdbcTemplate.query(sql, genreMapper, filmId));
     }
 
     private Mpa getMpaByFilmId(Long filmId) {
-        String sql = "SELECT m.id, m.name, m.DESCRIPTION FROM mpa_ratings m JOIN films f ON m.id = f.MPA_RATING_ID WHERE f.id = ?";
-        return jdbcTemplate.queryForObject(sql, this::mapRowToMpa, filmId);
+        String sql = "SELECT m.id, m.name, m.description FROM mpa_ratings m JOIN films f ON m.id = f.MPA_RATING_ID WHERE f.id = ?";
+        return jdbcTemplate.queryForObject(sql, mpaMapper, filmId);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
@@ -257,18 +258,6 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getInt("duration"),
                 null,
                 null
-        );
-    }
-
-    private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
-        return new Genre(rs.getLong("id"), rs.getString("name"));
-    }
-
-    private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
-        return new Mpa(
-                rs.getLong("id"),
-                rs.getString("name"),
-                rs.getString("description")
         );
     }
 }

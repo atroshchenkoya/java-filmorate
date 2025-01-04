@@ -30,7 +30,6 @@ class FilmorateApplicationTests {
 
 	@BeforeEach
 	void setUp() {
-		// Вставляем пользователя для теста
 		String sql = "INSERT INTO users (id, email, login, name, birthday) " +
 				"VALUES (1, 'test@example.com', 'test_user', 'Test User', '2000-01-01')";
 		jdbcTemplate.update(sql);
@@ -38,10 +37,8 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testFindUserById() {
-		// Получаем пользователя по ID
 		Optional<User> userOptional = userStorage.findById(1L);
 
-		// Проверяем, что пользователь найден, и его поля соответствуют ожидаемым значениям
 		assertThat(userOptional)
 				.isPresent()
 				.hasValueSatisfying(user -> {
