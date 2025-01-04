@@ -11,7 +11,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @TestPropertySource(locations = "classpath:application-test.properties")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({UserDbStorage.class})
+@Import({UserDbStorage.class, UserMapper.class})
 class FilmorateApplicationTests {
 
 	private final UserDbStorage userStorage;
@@ -28,6 +30,7 @@ class FilmorateApplicationTests {
 
 	@BeforeEach
 	void setUp() {
+		// Вставляем пользователя для теста
 		String sql = "INSERT INTO users (id, email, login, name, birthday) " +
 				"VALUES (1, 'test@example.com', 'test_user', 'Test User', '2000-01-01')";
 		jdbcTemplate.update(sql);
@@ -35,11 +38,18 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testFindUserById() {
+		// Получаем пользователя по ID
 		Optional<User> userOptional = userStorage.findById(1L);
+
+		// Проверяем, что пользователь найден, и его поля соответствуют ожидаемым значениям
 		assertThat(userOptional)
 				.isPresent()
-				.hasValueSatisfying(user ->
-						assertThat(user).hasFieldOrPropertyWithValue("id", 1L)
-				);
+				.hasValueSatisfying(user -> {
+					assertThat(user).hasFieldOrPropertyWithValue("id", 1L);
+					assertThat(user).hasFieldOrPropertyWithValue("email", "test@example.com");
+					assertThat(user).hasFieldOrPropertyWithValue("login", "test_user");
+					assertThat(user).hasFieldOrPropertyWithValue("name", "Test User");
+					assertThat(user).hasFieldOrPropertyWithValue("birthday", LocalDate.of(2000, 1, 1));
+				});
 	}
 }

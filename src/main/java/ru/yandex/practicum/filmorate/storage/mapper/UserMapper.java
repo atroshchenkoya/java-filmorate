@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.mapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -11,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Component
-@Service
 public class UserMapper implements RowMapper<User> {
 
     public void mapToPreparedStatement(User user, PreparedStatement ps) throws SQLException {
