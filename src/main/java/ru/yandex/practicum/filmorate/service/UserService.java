@@ -18,7 +18,7 @@ import java.util.Set;
 public class UserService {
 
     private final UserStorage userStorage;
-    private final UserFriendStorage userFriendStorage; // Внедряем UserFriendStorage
+    private final UserFriendStorage userFriendStorage;
 
     public User findById(Long id) {
         return userStorage.findById(id)
@@ -44,19 +44,19 @@ public class UserService {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        userFriendStorage.addFriend(user, friend); // Используем UserFriendStorage
+        userFriendStorage.addFriend(user, friend);
     }
 
     public void removeFriend(Long userId, Long friendId) {
         User user = findById(userId);
         User friend = findById(friendId);
 
-        userFriendStorage.removeFriend(user, friend); // Используем UserFriendStorage
+        userFriendStorage.removeFriend(user, friend);
     }
 
     public Collection<User> getFriends(Long userId) {
         User user = findById(userId);
-        return userFriendStorage.getFriends(user); // Используем UserFriendStorage
+        return userFriendStorage.getFriends(user);
     }
 
     public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
